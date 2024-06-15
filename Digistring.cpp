@@ -10,7 +10,7 @@
 // providing that this notice and the authors name and all copyright   
 // notices remains intact. If the source code in this file is used in   
 // any  commercial application then a statement along the lines of   
-// "Portions Copyright © 2000 Michel Wassink" must be included in   
+// "Portions Copyright ?2000 Michel Wassink" must be included in   
 // the startup banner, "About" box or printed documentation. An email   
 // letting me know that you are using it would be nice as well. That's   
 // not much to ask considering the amount of work that went into this.  
@@ -25,6 +25,7 @@
 //    mwassink@csi.com				  (private site)
 // An email letting me know that you are using it would be nice.
 /////////////////////////////////////////////////////////////////////////////
+#pragma once
 
 #include "stdafx.h"
 #include "Digistring.h"

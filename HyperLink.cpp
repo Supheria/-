@@ -61,7 +61,7 @@ BEGIN_MESSAGE_MAP(CHyperLink, CStatic)
 	ON_WM_SETFOCUS()
 	ON_WM_KILLFOCUS()
 	ON_WM_KEYDOWN()
-	ON_WM_NCHITTEST()
+	//ON_WM_NCHITTEST()
 	ON_WM_LBUTTONDOWN()	
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -171,10 +171,10 @@ void CHyperLink::OnMouseMove(UINT /* nFlags*/, CPoint point) {
 // lines of code and more reliable than turning on SS_NOTIFY in OnCtlColor
 // because Windows doesn't send WM_CTLCOLOR to bitmap static controls."
 // (Paul DiLascia)
-UINT CHyperLink::OnNcHitTest(CPoint /*point*/) 
-{
-		return HTCLIENT;	
-}
+//UINT CHyperLink::OnNcHitTest(CPoint /*point*/) 
+//{
+//		return HTCLIENT;	
+//}
 
 void CHyperLink::OnLButtonDown(UINT /*nFlags*/, CPoint /*point*/) 
 {
