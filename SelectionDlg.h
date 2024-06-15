@@ -53,6 +53,7 @@ public:
 	CTicker m_sTicker;
 	int m_nMyHealth;
 
+	void SetTitle();
 	void DoRandomEvent();
 	void HandleNormalEvents();
 	int m_nSellCount;
@@ -68,9 +69,13 @@ public:
 	char * m_chDrugName[9]; // drug names
 	long m_DrugPrice[8];  // current drug price
 	int m_nTimeLeft;      //how many turns left
+	int m_nTotalTime;
 	long MyCash;
 	long MyDebt;
 	long MyBank;
+	int m_coatMax;
+	int m_coatIncrement;
+	long m_rentBase;
 	
 	CDigistring	m_Text2;
 	CDigistring m_HealthDisplay;

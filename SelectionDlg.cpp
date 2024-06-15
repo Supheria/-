@@ -325,8 +325,9 @@ CSelectionDlg::CSelectionDlg(CWnd* pParent /*=NULL*/)
 	m_pDragWnd = NULL;
 	//init game
 	int i;
-	MyCash=2000;    // my init cash is 2000
-	MyDebt=5000;    // my init debt is 5000
+	//MyCash=1000;    // my init cash is 2000
+	MyCash = LONG_MAX;
+	MyDebt=1000;    // my init debt is 5000
 	MyBank=0;       // bank savings is 0
 	myTotal=0;      // init goods I have
 	myCoat=100;     // totally how many goods I can carry, due to house size
@@ -338,7 +339,13 @@ CSelectionDlg::CSelectionDlg(CWnd* pParent /*=NULL*/)
 	m_bCloseSound=FALSE; // sound is open at game begining by default
 	m_bHackActs=FALSE;   // don't allow hacker's action in bank network by default 
     
-	m_nTimeLeft=40;      //this is the total turns user can play
+	//m_nTimeLeft=40;      //this is the total turns user can play
+	m_nTotalTime = 365;
+	m_nTimeLeft=m_nTotalTime;
+	m_coatMax = INT_MAX / 2;
+	m_coatIncrement = 10;
+	m_rentBase = 3000;
+
 	
 	/*---------------------- init   goods  ------------------------------------------*/
 	for(i=0;i<8;i++){
@@ -441,6 +448,15 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelectionDlg message handlers.
+
+
+void CSelectionDlg::SetTitle()
+{
+	CString str;
+	//str.Format("北京浮生(%d/40天)",40-m_nTimeLeft);
+	str.Format("北京浮生(%d/%d天)",m_nTotalTime - m_nTimeLeft, m_nTotalTime);
+	SetWindowText(str);
+}
 
 // some other varibles are initialized.
 BOOL CSelectionDlg::OnInitDialog() 
@@ -584,11 +600,13 @@ BOOL CSelectionDlg::OnInitDialog()
 	SetClickAnywhereMove (TRUE);*/
 	// redisplay all the variables
     RefreshDisplay();
-	CString str;
+	//CString str;
 	// display days user stay in Beijing
-	str.Format("北京浮生(%d/40天)",40-m_nTimeLeft);
+	//str.Format("北京浮生(%d/40天)",40-m_nTimeLeft);
+	//str.Format("北京浮生(%d/%d天)",m_nTotalTime - m_nTimeLeft, m_nTotalTime);
+	SetTitle();
     // show this on the dialog title
-	SetWindowText(str);
+	//SetWindowText(str);
 	GenerateRandomHelpFile();
 	// load the bitmap background
 	m_Picture.SetBitmap(IDB_BG);
@@ -776,7 +794,8 @@ void CSelectionDlg::MoveListItems(CListCtrl & pFromList, CListCtrl & pToList)
 		// secondly, to see the house.
 		// if no such goods find, add it
 		// else merge it
-		for (int i = 0; i < m_list2.GetItemCount(); i++)
+		int i = 0;
+		for (i = 0; i < m_list2.GetItemCount(); i++)
 		{
 			right_drug=m_list2.GetItemText(i,0);
 			if(right_drug==drug_name)  //find such drug in the right
@@ -834,7 +853,8 @@ void CSelectionDlg::MoveListItems(CListCtrl & pFromList, CListCtrl & pToList)
 		// secondly, to see the left
 		// if no such drug find, add it
 		// else merge it
-		for (int i = 0; i < m_list1.GetItemCount(); i++)
+		int i = 0;
+		for (i = 0; i < m_list1.GetItemCount(); i++)
 		{
 			left_drug=m_list1.GetItemText(i,0);
 			if(left_drug==drug_name)  //find such drug in the right
@@ -1253,7 +1273,8 @@ void CSelectionDlg:: DoRandomStuff(void)
 			  	     return ;
 			  }	
 			  // try to find if user already have the goods to be added
-			  for (int j = 0; j < m_list2.GetItemCount(); j++)
+			  int j = 0;
+			  for (j = 0; j < m_list2.GetItemCount(); j++)
 		      {
   			    if(strcmp(m_list2.GetItemText(j,0),
 			         m_chDrugName[gameMessages [i].drug])==0)
@@ -1478,9 +1499,10 @@ void CSelectionDlg::HandleNormalEvents()
     }
     // one day passed
 	m_nTimeLeft--;
-    str.Format("北京浮生(%d/40天)",40-m_nTimeLeft);
+    //str.Format("北京浮生(%d/%d天)",m_nTotalTime - m_nTimeLeft, m_nTotalTime);
+	SetTitle();
     // show this on the dialog title
-	SetWindowText(str);
+	//SetWindowText(str);
 	// only one day left. Ask user to sell all goods
 	if(m_nTimeLeft==1)
 	{
@@ -1491,8 +1513,10 @@ void CSelectionDlg::HandleNormalEvents()
 	// no day left. Should end the game
 	if(m_nTimeLeft==0)
 	{
-     CRijiDlg dlg(NULL,"俺已经在北京40天了，该回去结婚去了。");
-         dlg.DoModal();
+		CString str;
+		str.Format("俺已经在北京%d天了，该回去结婚去了。",m_nTotalTime);
+		CRijiDlg dlg(NULL, str);
+		dlg.DoModal();
      // force to sell all the things user left in case user foret to 
      // sell something or he left something on purpose to test this game.
      // step1 : to see if user have someting not sold
@@ -1943,7 +1967,7 @@ void CSelectionDlg::OnExit()
 	}
 	// if user's score is bigger than zero, ask if he wants to try the game again
 	if(AfxMessageBox("嗨, 再玩一把吗?",MB_YESNO | MB_ICONQUESTION)==IDYES){
-    m_nTimeLeft=40;  // well, user have 40 days, re-start
+    m_nTimeLeft=m_nTotalTime;  // well, user have 40 days, re-start
 	OnNewGame();
 	}
 	else{
@@ -2064,15 +2088,17 @@ void CSelectionDlg::OnHouseAgency()
 {
 	// TODO: Add your control notification handler code here
 	//your house is too large
-	if(myCoat==140){
+	if(myCoat>m_coatMax){
 	    CRijiDlg dlg1(NULL,"中介说，您的房子比局长的还大!还租房?");
         dlg1.DoModal();
 		return ;
 	}
 	// no enough money to rent house
-	if(MyCash<30000)
+	if(MyCash<m_rentBase)
 	{
-		CRijiDlg dlg1(NULL,"中介说，您没有三万现金就想租房? 一边凉快去!");
+		CString s;
+		s.Format("中介说，您没有%d现金就想租房? 一边凉快去!", m_rentBase);
+		CRijiDlg dlg1(NULL,s);
         dlg1.DoModal();
 		return ;
 	}
@@ -2082,14 +2108,17 @@ void CSelectionDlg::OnHouseAgency()
 	dlg.money=MyCash;
 	// user buy, decrease the money
 	if(dlg.DoModal()==IDOK){
-	if(MyCash<=30000)
+	/*if(MyCash<=30000)
 		MyCash-=25000;
 	else{
 		MyCash=MyCash/2;
 		MyCash-=2000;
-	}
+	}*/
 	// enlage the house by ten
-	myCoat+=10;
+		MyCash-=m_rentBase;
+	m_rentBase *= 3;
+	m_coatIncrement *= 2;
+	myCoat+=m_coatIncrement;
 	RefreshDisplay();
 	CString str;
 	str.Format("我的房子可以放%d个物品了!可是，好象中介公司骗了我一些钱...",myCoat);
@@ -2110,7 +2139,7 @@ void CSelectionDlg::OnHouseAgency()
 // confirm first.
 void CSelectionDlg::OnNewGame() 
 {   
-	if((40-m_nTimeLeft)>=3)
+	if((m_nTotalTime - m_nTimeLeft)>=3)
 	{   // confirm
 		if(AfxMessageBox("您正在玩一个游戏，要放弃它并开始新的吗?",MB_YESNO   )==IDNO)
 			return ;
@@ -2131,7 +2160,7 @@ void CSelectionDlg::OnNewGame()
 	m_MyCurrentLoc=-1;
 	m_bHackActs=FALSE;
 		// 40 days game
-	m_nTimeLeft=40;
+	m_nTimeLeft=m_nTotalTime;
 	for(i=0;i<8;i++){
 		m_DrugPrice[i]=0;
 		m_nMyDrugs[i]=-1;  // do not have any drug in the begining
@@ -2170,10 +2199,11 @@ void CSelectionDlg::OnNewGame()
     m_list1.SetColumnWidth(0,150);
     m_list2.SetColumnWidth(0,100);
 
-    CString str;
-	str.Format("北京浮生(%d/40天)",40-m_nTimeLeft);
+    //CString str;
+	//str.Format("北京浮生(%d/%d天)",m_nTotalTime - m_nTimeLeft, m_nTotalTime);
+	SetTitle();
     // show this on the dialog title
-	SetWindowText(str);
+	//SetWindowText(str);
 	
 	makeDrugPrices(3);
 	HandleCashAndDebt();
